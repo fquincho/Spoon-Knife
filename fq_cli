@@ -1,0 +1,151 @@
+#!/bin/bash
+asterisk="++ +."
+if [ "$1" == "show" ]; then
+        if [ "$2" = "trunk_to_claro" ]; then
+        param5="$($asterisk -rx"pjsip show endpoint $2" | grep "dtmf_mode" | sed 's/dtmf_mode/DTMF     /g' )"
+        param1="$($asterisk -rx"pjsip show aor $2" | grep contact | egrep -v "max" | sed 's/contact/Trunk                /g')"
+        param2="$($asterisk -rx"pjsip show endpoint $2" | grep "allow" | egrep -v "privacy|overlap|subscribe|transfer" | sed 's/alaw|/G.711a, /g' | sed 's/ulaw|/G.711u,  /g' | sed 's/g729|/G.729, /g' | sed 's/opus/OPUS/g' |sed 's/allow /Codecs/g')"
+        param3="$($asterisk -rx"pjsip show aor trunk_to_claro" | grep "qualify_timeout"| sed 's/qualify_timeout/SIP Options                  /g')"
+        param4="$($asterisk -rx"pjsip show contacts" | grep trunk_to_claro | awk '{print $4}')"
+        echo " Description                        : $2"
+        echo "$param1"
+        echo "$param2"
+        echo "$param3"
+        echo " Status                             : $param4"
+        echo "$param5"
+
+        elif [ "$2" = "Edge_1" ]; then
+        param0="$($asterisk -rx"sip show peer $2" | grep "Description" )"
+        param1="$($asterisk -rx"sip show peer $2" | grep "Addr->IP" | sed 's/Addr->IP/Trunk   /g' )"
+        param2="$($asterisk -rx"sip show peer $2" | grep "Codecs" | sed 's/alaw|/G.711a, /g' | sed 's/ulaw|/G.711u, /g' | sed 's/g729|/G.729, /g' | sed 's/opus/OPUS/g') "
+        param3="$($asterisk -rx"sip show peer $2" | grep "Qualify Freq" | sed 's/Qualify Freq/SIP Options /g' )"
+        param4="$($asterisk -rx"sip show peer $2" | grep "Status" | sed 's/UNREACHABLE/Unavail /g' | sed 's/Unknown/Unavail /g' | sed 's/OK/Avail /g')"
+        param5="$($asterisk -rx"sip show peer $2" | grep "DTMFmode" | sed 's/DTMFmode/DTMF    /g')"
+        echo "$param0"
+        echo "$param1"
+        echo "$param2"
+        echo "$param3"
+        echo "$param4"
+        echo "$param5"
+
+        elif [ "$2" = "Edge_2" ]; then
+        param0="$($asterisk -rx"sip show peer $2" | grep "Description" )"
+        param1="$($asterisk -rx"sip show peer $2" | grep "Addr->IP" | sed 's/Addr->IP/Trunk   /g' )"
+        param2="$($asterisk -rx"sip show peer $2" | grep "Codecs" | sed 's/alaw|/G.711a, /g' | sed 's/ulaw|/G.711u, /g' | sed 's/g729|/G.729, /g' | sed 's/opus/OPUS/g') "
+        param3="$($asterisk -rx"sip show peer $2" | grep "Qualify Freq" | sed 's/Qualify Freq/SIP Options /g' )"
+        param4="$($asterisk -rx"sip show peer $2" | grep "Status" | sed 's/UNREACHABLE/Unavail /g' | sed 's/Unknown/Unavail /g' | sed 's/OK/Avail /g')"
+        param5="$($asterisk -rx"sip show peer $2" | grep "DTMFmode" | sed 's/DTMFmode/DTMF    /g')"
+        echo "$param0"
+        echo "$param1"
+        echo "$param2"
+        echo "$param3"
+        echo "$param4"
+        echo "$param5"
+        else
+        echo -e "\e[1;35m =======================\e[0m"
+        echo -e "\e[1;35m || Please try again: ||\e[0m"
+        echo -e "\e[1;35m =======================\e[0m"
+        echo -e "\e[1;35m trunk_to_claro\e[0m"
+        echo -e "\e[1;35m Edge_1\e[0m"
+        echo -e "\e[1;35m Edge_2\e[0m"
+        fi
+elif [ "$1" = "sbc" ]; then
+        if [ "$2" = "status" ]; then
+                if [ "$3" = "all" ]; then
+                        echo -e " \e[36m - Uptime status\e[0m"
+                        param6="$(++ /bin/uptime | sed 's/load average/Load Average/g')"
+                        echo -e "\e[32m $param6\e[0m"
+                        echo -e " \e[36m - Date status\e[0m"
+                        ++ /bin/date
+                        echo -e " \e[36m - Hwclock status\e[0m"
+                        ++ /sbin/hwclock
+                        echo -e " \e[36m - WEB status\e[0m"
+                        ++ systemctl status httpd | grep "Active"
+                        echo -e " \e[36m - Vega Sesion Controler (vega_sip)\e[0m"
+                        ++ systemctl status asterisk | grep "Active" | sed 's/asterisk/Vega_SIP/g' | sed 's/f2b/firewall/g'
+                        echo -e " \e[36m - Database status\e[0m"
+                        ++ systemctl status mariadb | grep "Active"
+                        echo -e " \e[36m - Firewall status\e[0m"
+                        ++ systemctl status firewalld | grep "Active" | sed 's/asterisk/Vega_SIP/g' | sed 's/f2b/firewall/g'
+                        echo -e " \e[36m - SNMP status\e[0m"
+                        ++ systemctl status snmpd | grep "Active"
+                        echo -e " \e[36m - Memory status\e[0m"
+                        ++ free -m
+                        echo -e " \e[36m - Network Status\e[0m"
+                echo -e "\e[32m lo:\e[0m" && ++ ethtool lo | grep "Link detected"
+                echo -e "\e[32m eno1:\e[0m" && ++ ethtool eno1 | grep "Link detected"
+                echo -e "\e[32m eno2:\e[0m" && ++ ethtool eno2 | grep "Link detected"
+                #echo -e "\e[32m enp3s0:\e[0m" && ++ ethtool enp3s0 | grep "Link detected"
+                #echo -e "\e[32m enp6s0:\e[0m" && ++ ethtool enp6s0 | grep "Link detected"
+
+                   elif [ "$3" = "web" ]; then
+                   ++ systemctl status httpd | egrep -v "localdomain" | sed 's/asterisk/Vega_SIP/g' | sed 's/f2b/firewall/g'
+                   elif [ "$3" = "vega_sip" ]; then
+                   ++ systemctl status asterisk | egrep -v "localdomain" | sed 's/asterisk/Vega_SIP/g' | sed 's/f2b/firewall/g' | sed 's/LSB: Asterisk PBX/UDP/g'
+                   elif [ "$3" = "database" ]; then
+                   ++ systemctl status mariadb | egrep -v "localdomain" | sed 's/asterisk/Vega_SIP/g' | sed 's/f2b/firewall/g'
+                   elif [ "$3" = "firewall" ]; then
+                   ++ systemctl status firewalld | egrep -v "localdomain" | sed 's/asterisk/Vega_SIP/g' | sed 's/f2b/firewall/g'
+                   elif [ "$3" = "snmp" ]; then
+                   ++ systemctl status snmpd | egrep -v "localdomain"
+                   elif [ "$3" = "memory" ]; then
+                   ++ free -m
+                   elif [ "$3" = "network" ]; then
+                   echo  -e "\e[36m * Network - IP\e[0m"
+                   ++ ip addr | egrep -v "valid|10.8.0.1|tun|f59b|none" && echo  -e "\e[36m * Network - routes\e[0m" && ++ ip route
+                else
+        echo -e "\e[1;35m =======================\e[0m"
+        echo -e "\e[1;35m || Please try again: ||\e[0m"
+        echo -e "\e[1;35m =======================\e[0m"
+                        echo -e "\e[1;35m all\e[0m"
+                        echo -e "\e[1;35m web\e[0m"
+                        echo -e "\e[1;35m vega_sip\e[0m"
+                        echo -e "\e[1;35m database\e[0m"
+                        echo -e "\e[1;35m firewall\e[0m"
+                        echo -e "\e[1;35m snmp\e[0m"
+                        echo -e "\e[1;35m memory\e[0m"
+                        echo -e "\e[1;35m network\e[0m"
+                fi
+        elif [ "$2" = "functions" ]; then
+                echo -e "\e[36m - FailOver Status (Disable - Automatic - On_Demand)\e[0m"
+                ++ asterisk -rx"database show apagar" | egrep -v "ound|rr" | sed s/apagar/status/g
+                echo -e "\e[36m - Round Robin Status\e[0m"
+                ++ asterisk -rx"database show status" | grep "Round_Robin" | sed s/mode_rr/status/g
+                echo -e "\e[36m - License Status \e[0m"
+                ++ asterisk -rx"database show status" | grep "License" | egrep -v "ound" | sed s/licence/status/g
+
+        else
+        echo -e "\e[1;35m =======================\e[0m"
+        echo -e "\e[1;35m || Please try again: ||\e[0m"
+        echo -e "\e[1;35m =======================\e[0m"
+                echo  -e "\e[1;35m status\e[0m"
+                echo  -e "\e[1;35m functions\e[0m"
+                #echo  -e "lol"
+        fi
+
+elif [ "$1" = "sngrep" ]; then
+++ sngrep
+elif [ "$1" = "diskspace" ]; then
+++ df -h
+elif [ "$1" = "firewall" ]; then
+++ iptables -nL | sed 's/asterisk/Vega_SIP/g' | sed 's/f2b/firewall/g'
+elif [ "$1" = "ping" ]; then
+++ ping $2 $3 $4 $5 $6 $7 $8 $9
+elif [ "$1" = "nmap" ]; then
+++ nmap $2 $3 $4 $5 $6 $7 $8 $9
+elif [ "$1" = "traceroute" ]; then
+++ traceroute $2 $3 $4 $5 $6 $7 $8 $9
+
+else
+        echo -e "\e[1;35m =======================\e[0m"
+        echo -e "\e[1;35m || Please try again: ||\e[0m"
+        echo -e "\e[1;35m =======================\e[0m"
+        echo -e "\e[1;35m show\e[0m"
+        echo -e "\e[1;35m sngrep\e[0m"
+        echo -e "\e[1;35m sbc\e[0m"
+        echo -e "\e[1;35m diskspace\e[0m"
+        echo -e "\e[1;35m firewall\e[0m"
+        echo -e "\e[1;35m ping\e[0m"
+        echo -e "\e[1;35m nmap\e[0m"
+        echo -e "\e[1;35m traceroute\e[0m"
+fi
